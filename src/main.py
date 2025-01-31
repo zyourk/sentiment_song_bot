@@ -1,5 +1,6 @@
 from web_scraper import LyricScraper
 from web_scraper import LyricNotFound
+from sentiment_analyzer import Analyzer
 
 """
 The main script that will run and utilize the other files
@@ -11,6 +12,8 @@ step of the process
 #Define our scraper
 scraper = LyricScraper()
 
+analyzer = Analyzer()
+
 #While loop to keep it continually running
 while(True):
     print("Please enter the artist name")
@@ -20,6 +23,6 @@ while(True):
 
     try:
         lyrics = scraper.get_lyrics(artist, song)
-        print(lyrics)
+        print(analyzer.analyze(lyrics))
     except LyricNotFound as e:
         print(e.to_string())
