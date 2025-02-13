@@ -1,6 +1,7 @@
-from web_scraper import LyricScraper
+import web_scraper
 from web_scraper import LyricNotFound
-from sentiment_analyzer import Analyzer
+import sentiment_analyzer
+import lastfm
 
 """
 The main script that will run and utilize the other files
@@ -8,11 +9,6 @@ for functionality. Currently continually asks user for songs
 and outputs their lyrics. This is simply the implementation of the first
 step of the process
 """
-
-#Define our scraper
-scraper = LyricScraper()
-
-analyzer = Analyzer()
 
 #While loop to keep it continually running
 while(True):
@@ -22,7 +18,8 @@ while(True):
     song = input()
 
     try:
-        lyrics = scraper.get_lyrics(artist, song)
-        print(analyzer.analyze(lyrics))
+        lyrics = web_scraper.get_lyrics(artist, song)
+        print(sentiment_analyzer.analyze(lyrics))
+        print(f"For this song, I recommend: \n{lastfm.get_formatted_recs(artist, song)}")
     except LyricNotFound as e:
         print(e.to_string())
