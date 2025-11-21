@@ -1,3 +1,5 @@
+import urllib.parse
+
 import requests
 import json
 import base64
@@ -38,16 +40,40 @@ token = get_token()
 def get_auth_header():
     return {"Authorization": "Bearer " + token}
 
-def get_song_id(song, artist):
-    url = "https://api.spotify.com/v1/search"
-    headers = get_auth_header()
-    query = f"?q={song}+{artist}&type=track&limit=1"
+def get_song_id(song, artist, token=token, limit=10):
+    headers = {"Authorization": "Bearer " + token}
+    base = "https://api.spotify.com/v1/search"
+    q = f'track:"{song}" artist:"{artist}"'
+    q_enc = urllib.parse.quote_plus(q)
+    url = f"{base}?q={q_enc}&type=track&limit={limit}"
 
-    query_url = url + query
-    result = requests.get(query_url, headers=headers)
-    json_result = json.loads(result.content)["tracks"]["items"]
-    track_id = json_result[0]["id"]
-    return track_id
+    resp = requests.get(url, headers=headers)
+    resp.raise_for_status()
+    items = resp.json().get("tracks", {}).get("items", [])
+
+    if not items:
+        raise ValueError(f"No Spotify search results for: {song} - {artist}")
+
+    artist_lower = artist.strip().lower()
+    song_lower = song.strip().lower()
+    for t in items:
+        artist_names = [a["name"].strip().lower() for a in t["artists"]]
+        if artist_lower in artist_names:
+            if t["name"].strip().lower() == song_lower:
+                print(t["id"])
+                return t["id"]
+            candidate_id = t["id"]
+            candidate = t
+
+    for t in items:
+        if t["name"].strip().lower() == song_lower:
+            print(t["id"])
+            return t["id"]
+
+    if 'candidate_id' in locals():
+        return candidate_id
+    print(items[0]["id"])
+    return items[0]["id"]
 
 def get_song_recs(song, artist):
     url = "https://api.spotify.com/v1/recommendations"
@@ -57,5 +83,8 @@ def get_song_recs(song, artist):
 
     query_url = url + query
     result = requests.get(query_url, headers=headers)
+    print(result)
     json_result = json.loads(result.content)
     return json_result
+
+get_song_recs(song="some love", artist="dreamcatcher")

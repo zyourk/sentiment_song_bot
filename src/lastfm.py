@@ -26,7 +26,7 @@ def get_similar_tracks(artist, track):
         "api_key": API_KEY,
         "artist": artist,
         "track": track,
-        "limit": 5,
+        "limit": 10,
         "format": "json"
     }
 
@@ -52,7 +52,18 @@ def get_similar_tracks(artist, track):
 #for the user to read
 def get_formatted_recs(artist, track):
     similar_tracks = get_similar_tracks(artist, track)
-    formatted_recs = ""
+    formatted_recs = []
     for track in similar_tracks:
-        formatted_recs += f"{track['name']} by {track['artist']}: {track['url']}\n"
-    return formatted_recs
+        formatted_recs.append({
+            "artist": track["artist"],
+            "name": track["name"]
+        })
+    for song in formatted_recs:
+        if song["artist"].lower() == artist.lower():
+            same_artist_song = song
+            break
+    for song in formatted_recs:
+        if song["artist"].lower() != artist.lower():
+            different_artist_song = song
+            break
+    return same_artist_song, different_artist_song
